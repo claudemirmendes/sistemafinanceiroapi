@@ -1,7 +1,13 @@
 package com.claudemir.sistemafinanceiro.controller;
 
+import com.claudemir.sistemafinanceiro.dto.JwtResponse;
+import com.claudemir.sistemafinanceiro.dto.RegisterRequest;
 import com.claudemir.sistemafinanceiro.model.User;
 import com.claudemir.sistemafinanceiro.repository.UserRepository;
+import com.claudemir.sistemafinanceiro.service.JwtService;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,23 +17,37 @@ public class AuthController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    @Value("${app.access-key}")
+    private String chaveDeAcesso;
+
+    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     @PostMapping("/register")
-    public String register(@RequestBody User user) {
-        boolean exists = userRepository.findByUsername(user.getUsername()).isPresent();
-        if (exists) {
-            return "Nome de usuário já está em uso.";
+    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+        if (!chaveDeAcesso.equals(request.getAccessKey())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Chave de acesso inválida.");
         }
 
-        user.setPassword(passwordEncoder.encode(user.getPassword())); // criptografa a senha
-        user.setRole("ROLE_USER"); // define a role padrão
-        userRepository.save(user); // salva no banco
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+            return ResponseEntity.badRequest().body("Nome de usuário já está em uso.");
+        }
 
-        return "Usuário registrado com sucesso!";
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole("ROLE_USER");
+
+        userRepository.save(user);
+
+        String token = jwtService.generateToken(user.getUsername());
+        String refreshToken = jwtService.generateRefreshToken(user.getUsername());
+
+        return ResponseEntity.ok(new JwtResponse(token, refreshToken, "Usuário registrado com sucesso!"));
     }
 }
