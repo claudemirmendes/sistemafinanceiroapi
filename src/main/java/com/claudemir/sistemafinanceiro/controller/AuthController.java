@@ -1,6 +1,7 @@
 package com.claudemir.sistemafinanceiro.controller;
 
 import com.claudemir.sistemafinanceiro.dto.JwtResponse;
+import com.claudemir.sistemafinanceiro.dto.LoginRequest;
 import com.claudemir.sistemafinanceiro.dto.RegisterRequest;
 import com.claudemir.sistemafinanceiro.model.User;
 import com.claudemir.sistemafinanceiro.repository.UserRepository;
@@ -50,4 +51,25 @@ public class AuthController {
 
         return ResponseEntity.ok(new JwtResponse(token, refreshToken, "Usuário registrado com sucesso!"));
     }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        var optionalUser = userRepository.findByUsername(request.getUsername());
+
+        if (optionalUser.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário ou senha inválidos.");
+        }
+
+        var user = optionalUser.get();
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário ou senha inválidos.");
+        }
+
+        String token = jwtService.generateToken(user.getUsername());
+        String refreshToken = jwtService.generateRefreshToken(user.getUsername());
+
+        return ResponseEntity.ok(new JwtResponse(token, refreshToken, "Login realizado com sucesso!"));
+    }
+
 }
