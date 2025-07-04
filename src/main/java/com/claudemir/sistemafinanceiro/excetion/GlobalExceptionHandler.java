@@ -1,4 +1,4 @@
-package com.claudemir.sistemafinanceiro.exception;
+package com.claudemir.sistemafinanceiro.excetion;
 
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import org.springframework.http.HttpStatus;
