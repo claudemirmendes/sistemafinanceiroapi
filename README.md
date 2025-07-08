@@ -1,176 +1,134 @@
-# 💰 Sistema Financeiro Pessoal
+# 💰 Sistema Financeiro - API REST com Spring Boot
 
-Este é um projeto pessoal de backend desenvolvido com **Java + Spring Boot**, utilizando **autenticação JWT** e persistência com **PostgreSQL**, com o objetivo de servir como base para um sistema de controle financeiro pessoal.
+API desenvolvida em Java com Spring Boot para controle de transações financeiras (receitas e despesas), com autenticação baseada em JWT.
 
 ---
 
-## 🚀 Tecnologias utilizadas
+## 🔧 Tecnologias
 
 - Java 17
-- Spring Boot 3.2.5
-- Spring Security
+- Spring Boot 3.x
+- Spring Security (JWT)
 - Spring Data JPA
 - PostgreSQL
-- Lombok
-- JWT (Java JWT - Auth0)
 - Maven
+- Lombok
 
 ---
 
-## 🧩 Como executar localmente
+## ⚙️ Configuração do projeto
 
-### ⚙️ Pré-requisitos
-
-- Java 17+
-- PostgreSQL
-- Maven
-
-### 📦 Clone o repositório
-
-```bash
-git clone https://github.com/seu-usuario/sistemafinanceiro.git
-cd sistemafinanceiro
-```
-
-### 🛠️ Configure o banco de dados
-
-Crie um banco de dados:
-
-```sql
-CREATE DATABASE sistemafinanceiro;
-```
-
-### ✏️ Edite o `application.properties`
-
-No arquivo `src/main/resources/application.properties`:
+No arquivo `application.properties`, configure:
 
 ```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/sistemafinanceiro
+spring.datasource.url=jdbc:postgresql://localhost:5432/financeiro
 spring.datasource.username=seu_usuario
 spring.datasource.password=sua_senha
 
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-
-# JWT
-jwt.secret=suaChaveSecretaMinimo32Caracteres
-jwt.expiration=3600000
-jwt.refreshExpiration=86400000
-
-# Chave de acesso para registro
-app.access-key=MINHA_CHAVE_SEGURA
-```
-
-### ▶️ Execute a aplicação
-
-```bash
-./mvnw spring-boot:run
-```
-
-> A API estará disponível em: `http://localhost:8080`
-
----
-
-## 📡 Endpoints disponíveis
-
-### 🔐 Registro de Usuário
-
-- **POST** `/auth/register`
-
-#### Requisição
-
-```json
-{
-  "username": "claudemirmendes",
-  "password": "minhaSenha123",
-  "accessKey": "MINHA_CHAVE_SEGURA"
-}
-```
-
-#### Resposta
-
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6Ikp...",
-  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6Ikp...",
-  "message": "Usuário registrado com sucesso!"
-}
-```
-
----
-
-### 🔑 Login
-
-- **POST** `/auth/login`
-
-#### Requisição
-
-```json
-{
-  "username": "claudemirmendes",
-  "password": "minhaSenha123"
-}
-```
-
-#### Resposta
-
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6Ikp...",
-  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6Ikp...",
-  "message": "Login realizado com sucesso!"
-}
-```
-
----
-
-## 📁 Estrutura do Projeto
-
-```
-src/
-├── controller/
-│   └── AuthController.java
-├── dto/
-│   ├── RegisterRequest.java
-│   ├── LoginRequest.java
-│   └── JwtResponse.java
-├── model/
-│   └── User.java
-├── repository/
-│   └── UserRepository.java
-├── service/
-│   └── JwtService.java
-└── SistemafinanceiroApplication.java
+jwt.secret=sua_chave_secreta
+jwt.expiration=86400000
+jwt.refreshExpiration=604800000
 ```
 
 ---
 
 ## ✅ Funcionalidades
 
-- Registro de usuários com chave de acesso segura
-- Autenticação com JWT (Token e Refresh Token)
-- Senhas criptografadas com `PasswordEncoder`
-- Validações básicas e tratamento de exceções
+### 🔐 Autenticação
+
+| Método | Rota           | Descrição             |
+|--------|----------------|-----------------------|
+| POST   | `/auth/register` | Cadastra novo usuário |
+| POST   | `/auth/login`    | Retorna token JWT     |
 
 ---
 
-## 🧪 Rodar os testes
+### 💸 Transações
+
+| Método | Rota          | Descrição                     |
+|--------|---------------|-------------------------------|
+| POST   | `/transacoes` | Cadastra nova transação       |
+
+> ⚠️ Requer autenticação com JWT. Enviar o token no header:  
+> `Authorization: Bearer <token>`
+
+---
+
+## 📜 Regras de Negócio
+
+### 📥 Receita
+
+- **Campos obrigatórios:**
+    - `dataPrevistaRecebimento`
+    - `confirmada`
+- **Campos opcionais:**
+    - `dataRecebida`
+
+### 📤 Despesa
+
+- **Campos obrigatórios:**
+    - `dataVencimento`
+    - `paga`
+- **Campos opcionais:**
+    - `dataPagamento`
+
+> A validação é condicional com base no tipo da transação (`RECEITA` ou `DESPESA`).
+
+---
+
+## 🔐 Segurança
+
+- Autenticação com JWT
+- Endpoints `/auth/**` são públicos
+- Demais rotas exigem autenticação
+- `JwtAuthenticationFilter` intercepta requisições, valida o token e define o contexto de autenticação
+
+---
+
+## 🧪 Teste Rápido com cURL
 
 ```bash
-./mvnw test
+# Cadastro
+curl -X POST http://localhost:8080/auth/register   -H "Content-Type: application/json"   -d '{"username": "claudemirmendes", "password": "minhaSenha123"}'
+
+# Login
+curl -X POST http://localhost:8080/auth/login   -H "Content-Type: application/json"   -d '{"username": "claudemirmendes", "password": "minhaSenha123"}'
 ```
+
+---
+
+## 🗂️ Estrutura do Projeto
+
+- `model` – Entidades JPA (`User`, `Transacao`)
+- `dto` – Requisições de entrada (`LoginRequest`, `RegisterRequest`, `TransacaoRequest`)
+- `repository` – Acesso ao banco (`UserRepository`, `TransacaoRepository`)
+- `service` – Regras de negócio
+- `controller` – Endpoints REST
+- `security` – Filtros e configuração JWT
 
 ---
 
 ## 📌 Observações
 
-- O campo `accessKey` protege o endpoint de registro contra acessos indevidos.
-- JWT e Refresh Token são retornados após registro e login.
-- Tokens possuem tempo de expiração configurável via `application.properties`.
+- O campo `usuario` é automaticamente vinculado à transação com base no token
+- O valor da transação é salvo como `BigDecimal` no backend e `numeric` no banco
+- Senhas são criptografadas com `BCrypt`
+- JWT é validado a cada requisição via filtro personalizado
+- A estrutura permite expansão para novas funcionalidades (ex: listagem, edição, gráficos etc.)
+
+---
+
+## 🚀 Futuras Implementações
+
+- Listagem de transações por usuário autenticado
+- Atualização e remoção de transações
+- Resumo mensal (dashboard)
+- Suporte a múltiplas contas
 
 ---
 
 ## 👨‍💻 Autor
 
-**Claudemir Mendes**  
-Projeto pessoal com fins de aprendizado e demonstração de habilidades com Java e Spring Boot.
+Claudemir Mendes  
+Desenvolvedor Java em transição a partir de Ruby on Rails  
+LinkedIn: [linkedin.com/in/claudemirmendes](https://linkedin.com/in/claudemirmendes)
