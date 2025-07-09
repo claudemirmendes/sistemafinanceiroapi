@@ -3,7 +3,9 @@ package com.claudemir.sistemafinanceiro.controller;
 import com.claudemir.sistemafinanceiro.dto.TransacaoRequest;
 import com.claudemir.sistemafinanceiro.model.TipoTransacao;
 import com.claudemir.sistemafinanceiro.service.TransacaoService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -32,4 +34,29 @@ public class TransacaoController {
 
         return transacaoService.salvarComUsuario(request, authentication);
     }
+
+    @PutMapping("/{id}/confirmar-pagamento")
+    public ResponseEntity<?> confirmarPagamento(@PathVariable Long id) {
+        try {
+            transacaoService.confirmarPagamento(id);
+            return ResponseEntity.ok("Pagamento confirmado com sucesso.");
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/{id}/confirmar-recebimento")
+    public ResponseEntity<?> confirmarRecebimento(@PathVariable Long id){
+        try {
+            transacaoService.confirmarRecebimento(id);
+            return ResponseEntity.ok("recebimento confirmado");
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 }
