@@ -1,7 +1,11 @@
 package com.claudemir.sistemafinanceiro.controller;
 
+import com.claudemir.sistemafinanceiro.dto.FiltroTransacaoRequest;
 import com.claudemir.sistemafinanceiro.dto.TransacaoRequest;
 import com.claudemir.sistemafinanceiro.model.TipoTransacao;
+import com.claudemir.sistemafinanceiro.model.Transacao;
+import com.claudemir.sistemafinanceiro.model.User;
+import com.claudemir.sistemafinanceiro.repository.UserRepository;
 import com.claudemir.sistemafinanceiro.service.TransacaoService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
@@ -10,14 +14,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/transacoes")
 public class TransacaoController {
 
     private final TransacaoService transacaoService;
+    private  final UserRepository userRepository;
 
-    public TransacaoController(TransacaoService transacaoService) {
+    public TransacaoController(TransacaoService transacaoService,UserRepository userRepository) {
         this.transacaoService = transacaoService;
+        this.userRepository = userRepository;
     }
 
     @PostMapping
@@ -57,6 +65,12 @@ public class TransacaoController {
         } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @PostMapping("/filtrar")
+    public ResponseEntity<?> filtrar(@RequestBody FiltroTransacaoRequest filtro, Authentication authentication) {
+        List<Transacao> resultado = transacaoService.filtrar(filtro, authentication);
+        return ResponseEntity.ok(resultado);
     }
 
 }
