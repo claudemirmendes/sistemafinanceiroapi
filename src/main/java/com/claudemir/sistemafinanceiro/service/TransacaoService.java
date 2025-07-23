@@ -7,6 +7,7 @@ import com.claudemir.sistemafinanceiro.model.Transacao;
 import com.claudemir.sistemafinanceiro.model.User;
 import com.claudemir.sistemafinanceiro.repository.TransacaoRepository;
 import com.claudemir.sistemafinanceiro.repository.UserRepository;
+import com.claudemir.sistemafinanceiro.specification.TransacaoSpecification;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -14,6 +15,7 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.transaction.Transactional;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -106,33 +108,31 @@ public class TransacaoService {
         User user = userRepository.findByUsername(authentication.getName())
                 .orElseThrow(()-> new EntityNotFoundException("Usuário Não encontrado"));
         // Sempre filtrar por usuário
-        predicates.add(cb.equal(root.get("usuario").get("id"), user.getId()));
+        Specification<Transacao> spec = Specification.where(TransacaoSpecification.doUsuario(user.getId()));
 
         if (filtro.getTipo() != null) {
-            predicates.add(cb.equal(root.get("tipo"), filtro.getTipo()));
+            spec = spec.and(TransacaoSpecification.doTipo(filtro.getTipo()));
         }
 
         if (filtro.getValorMin() != null) {
-            predicates.add(cb.greaterThanOrEqualTo(root.get("valor"), filtro.getValorMin()));
+           spec = spec.and(TransacaoSpecification.valorMenorQue(filtro.getValorMin()));
         }
 
         if (filtro.getValorMax() != null) {
-            predicates.add(cb.lessThanOrEqualTo(root.get("valor"), filtro.getValorMax()));
+           spec = spec.and(TransacaoSpecification.valorMaiorQue(filtro.getValorMax()));
         }
 
         // Filtros de DESPESA
         if (filtro.getPaga() != null) {
-            predicates.add(cb.equal(root.get("paga"), filtro.getPaga()));
+            spec = spec.and(TransacaoSpecification.ePaga(filtro.getPaga()));
         }
 
         if (filtro.getDataVencimentoInicio() != null && filtro.getDataVencimentoFim() != null) {
-            predicates.add(cb.between(root.get("dataVencimento"),
-                    filtro.getDataVencimentoInicio(), filtro.getDataVencimentoFim()));
+            spec = spec.and(TransacaoSpecification.dataVencimentoEntre(filtro.getDataVencimentoInicio(), filtro.getDataVencimentoFim()));
         }
 
         if (filtro.getDataPagamentoInicio() != null && filtro.getDataPagamentoFim() != null) {
-            predicates.add(cb.between(root.get("dataPagamento"),
-                    filtro.getDataPagamentoInicio(), filtro.getDataPagamentoFim()));
+            spec = spec.and(TransacaoSpecification.dataPagamentoEntre(filtro.getDataPagamentoInicio(), filtro.getDataPagamentoFim()));
         }
 
         // Filtros de RECEITA
@@ -141,18 +141,14 @@ public class TransacaoService {
         }
 
         if (filtro.getDataPrevistaInicio() != null && filtro.getDataPrevistaFim() != null) {
-            predicates.add(cb.between(root.get("dataPrevistaRecebimento"),
-                    filtro.getDataPrevistaInicio(), filtro.getDataPrevistaFim()));
+            spec = spec.and(TransacaoSpecification.dataPrevistaEntre(filtro.getDataPrevistaInicio(), filtro.getDataPrevistaFim()));
         }
 
         if (filtro.getDataRecebimentoInicio() != null && filtro.getDataRecebimentoFim() != null) {
-            predicates.add(cb.between(root.get("dataRecebimento"),
-                    filtro.getDataRecebimentoInicio(), filtro.getDataRecebimentoFim()));
+            spec = spec.and(TransacaoSpecification.dataRecebimentoEntre(filtro.getDataRecebimentoInicio(), filtro.getDataRecebimentoFim()));
         }
 
-        query.where(cb.and(predicates.toArray(new Predicate[0])));
-
-        return entityManager.createQuery(query).getResultList();
+        return transacaoRepository.findAll(spec);
     }
 
 }
