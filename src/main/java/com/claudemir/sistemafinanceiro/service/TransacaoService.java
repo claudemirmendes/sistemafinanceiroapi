@@ -98,12 +98,7 @@ public class TransacaoService {
 
         transacaoRepository.save(transacao);
     }
-    public List<Transacao> filtrar(FiltroTransacaoRequest filtro, Authentication authentication) {
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Transacao> query = cb.createQuery(Transacao.class);
-        Root<Transacao> root = query.from(Transacao.class);
-
-        List<Predicate> predicates = new ArrayList<>();
+    public List<Transacao> filtrar(FiltroTransacaoRequest filtro, Authentication authentication) {;
 
         User user = userRepository.findByUsername(authentication.getName())
                 .orElseThrow(()-> new EntityNotFoundException("Usuário Não encontrado"));
@@ -135,9 +130,9 @@ public class TransacaoService {
             spec = spec.and(TransacaoSpecification.dataPagamentoEntre(filtro.getDataPagamentoInicio(), filtro.getDataPagamentoFim()));
         }
 
-        // Filtros de RECEITA
+        // Filtros de RECEITA criar o spe
         if (filtro.getConfirmada() != null) {
-            predicates.add(cb.equal(root.get("confirmada"), filtro.getConfirmada()));
+            spec = spec.and(TransacaoSpecification.eConfirmada(filtro.getConfirmada()));
         }
 
         if (filtro.getDataPrevistaInicio() != null && filtro.getDataPrevistaFim() != null) {

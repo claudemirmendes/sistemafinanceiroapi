@@ -37,11 +37,11 @@ public class TransacaoSpecification {
         return (root, query, cb) -> cb.between(root.get("data_prevista_recebimento"), inicio, fim);
     }
 
-
-
-
     public static Specification<Transacao> ePaga(Boolean paga){
         return   (root, query, cb) -> cb.equal(root.get("paga"), paga);
+    }
+    public static Specification<Transacao> eConfirmada(Boolean confirmada){
+        return   (root, query, cb) -> cb.equal(root.get("confirmada"), confirmada);
     }
 
 }
