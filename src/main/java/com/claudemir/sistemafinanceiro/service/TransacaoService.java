@@ -102,7 +102,6 @@ public class TransacaoService {
 
         User user = userRepository.findByUsername(authentication.getName())
                 .orElseThrow(()-> new EntityNotFoundException("Usuário Não encontrado"));
-        // Sempre filtrar por usuário
         Specification<Transacao> spec = Specification.where(TransacaoSpecification.doUsuario(user.getId()));
 
         if (filtro.getTipo() != null) {
@@ -144,6 +143,16 @@ public class TransacaoService {
         }
 
         return transacaoRepository.findAll(spec);
+    }
+
+    @Transactional
+    public void atualizarTransacao(Long id, TransacaoRequest request) {
+        Transacao transacao = transacaoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Transação não encontrada"));
+        transacao.setDescricao(request.getDescricao());
+        transacao.setValor(request.getValor());
+        transacao.setTipo(request.getTipo());
+        transacao.setDataPrevistaRecebimento(request.getDataPrevistaRecebimento());
     }
 
 }

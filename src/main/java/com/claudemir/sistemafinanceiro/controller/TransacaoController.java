@@ -1,6 +1,7 @@
 package com.claudemir.sistemafinanceiro.controller;
 
 import com.claudemir.sistemafinanceiro.dto.FiltroTransacaoRequest;
+import com.claudemir.sistemafinanceiro.dto.LoginRequest;
 import com.claudemir.sistemafinanceiro.dto.TransacaoRequest;
 import com.claudemir.sistemafinanceiro.model.TipoTransacao;
 import com.claudemir.sistemafinanceiro.model.Transacao;
@@ -71,6 +72,18 @@ public class TransacaoController {
     public ResponseEntity<?> filtrar(@RequestBody FiltroTransacaoRequest filtro, Authentication authentication) {
         List<Transacao> resultado = transacaoService.filtrar(filtro, authentication);
         return ResponseEntity.ok(resultado);
+    }
+
+    @PutMapping("/{id}/atualizar")
+    public ResponseEntity<?> atualizar(@PathVariable Long id, @RequestBody TransacaoRequest request) {
+        try {
+            transacaoService.atualizarTransacao(id, request);
+            return ResponseEntity.ok("Transação atualizada");
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
 }
