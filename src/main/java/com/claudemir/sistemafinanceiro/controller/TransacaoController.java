@@ -19,7 +19,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/transacoes")
-public class TransacaoController {
+public class
+
+
+TransacaoController {
 
     private final TransacaoService transacaoService;
     private  final UserRepository userRepository;
@@ -75,7 +78,7 @@ public class TransacaoController {
     }
 
     @PutMapping("/{id}/atualizar")
-    public ResponseEntity<?> atualizar(@PathVariable Long id, @RequestBody TransacaoRequest request) {
+    public ResponseEntity<?> atualizar(@PathVariable("id") Long id, @RequestBody TransacaoRequest request) {
         try {
             transacaoService.atualizarTransacao(id, request);
             return ResponseEntity.ok("Transação atualizada");

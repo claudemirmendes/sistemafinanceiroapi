@@ -7,12 +7,15 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 public class TransacaoSpecification {
     public static Specification<Transacao> doUsuario(Long id) {
-        return (root, query, cb) -> cb.equal(root.get("usuario_id"), id);
+        // Corrigido: acessa o campo "usuario" (objeto) e seu atributo "id"
+        return (root, query, cb) -> cb.equal(root.get("usuario").get("id"), id);
     }
 
     public static Specification<Transacao> doTipo(TipoTransacao tipo) {
+        // Correto: campo "tipo" é direto na entidade Transacao
         return (root, query, cb) -> cb.equal(root.get("tipo"), tipo);
     }
+
 
     public static Specification<Transacao> valorMaiorQue(BigDecimal valorMin) {
         return (root, query, cb) -> cb.greaterThanOrEqualTo(root.get("valor"), valorMin);

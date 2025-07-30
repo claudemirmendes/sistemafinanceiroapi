@@ -2,6 +2,7 @@ package com.claudemir.sistemafinanceiro.service;
 
 import com.claudemir.sistemafinanceiro.dto.FiltroTransacaoRequest;
 import com.claudemir.sistemafinanceiro.dto.TransacaoRequest;
+import com.claudemir.sistemafinanceiro.mapper.TransacaoMapper;
 import com.claudemir.sistemafinanceiro.model.TipoTransacao;
 import com.claudemir.sistemafinanceiro.model.Transacao;
 import com.claudemir.sistemafinanceiro.model.User;
@@ -32,14 +33,17 @@ public class TransacaoService {
     private final UserRepository userRepository;
     private EntityManager entityManager;
     private User usuario;
+    private final TransacaoMapper mapper;
 
 
     public TransacaoService(TransacaoRepository transacaoRepository,
                             UserRepository userRepository,
-                            EntityManager entityManager) {
+                            EntityManager entityManager,
+                            TransacaoMapper mapper) {
         this.transacaoRepository = transacaoRepository;
         this.userRepository = userRepository;
         this.entityManager = entityManager;
+        this.mapper = mapper;
     }
 
     public ResponseEntity<?> salvarComUsuario(TransacaoRequest request, Authentication authentication) {
@@ -149,10 +153,14 @@ public class TransacaoService {
     public void atualizarTransacao(Long id, TransacaoRequest request) {
         Transacao transacao = transacaoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Transação não encontrada"));
-        transacao.setDescricao(request.getDescricao());
-        transacao.setValor(request.getValor());
-        transacao.setTipo(request.getTipo());
-        transacao.setDataPrevistaRecebimento(request.getDataPrevistaRecebimento());
+
+
+        if (request.getTipo() != null){
+            throw new IllegalStateException("Não é possivel alterar o tipo da transação");
+        };
+        mapper.updateTransacaoFromRequest(request, transacao);
+
+        transacaoRepository.save(transacao);
     }
 
 }
