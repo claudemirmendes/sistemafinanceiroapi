@@ -15,7 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/transacoes")
@@ -48,26 +50,35 @@ TransacaoController {
     }
 
     @PutMapping("/{id}/confirmar-pagamento")
-    public ResponseEntity<?> confirmarPagamento(@PathVariable Long id) {
+    public ResponseEntity<?> confirmarPagamento(@PathVariable("id") Long id) {
         try {
             transacaoService.confirmarPagamento(id);
-            return ResponseEntity.ok("Pagamento confirmado com sucesso.");
+            Map<String, String> resposta = new HashMap<>();
+            resposta.put("mensagem", "Pagamento confirmado com sucesso.");
+            return ResponseEntity.ok(resposta);
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("erro", e.getMessage()));
         } catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Map.of("erro", e.getMessage()));
         }
     }
 
     @PutMapping("/{id}/confirmar-recebimento")
-    public ResponseEntity<?> confirmarRecebimento(@PathVariable Long id){
+    public ResponseEntity<?> confirmarRecebimento(@PathVariable("id") Long id){
         try {
             transacaoService.confirmarRecebimento(id);
-            return ResponseEntity.ok("recebimento confirmado");
+            Map<String, String> resposta = new HashMap<>();
+
+            resposta.put("mensagem", "recebimento confirmado");
+            return ResponseEntity.ok(resposta);
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("erro", e.getMessage()));
         } catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Map.of("erro", e.getMessage()));
         }
     }
 
@@ -81,7 +92,10 @@ TransacaoController {
     public ResponseEntity<?> atualizar(@PathVariable("id") Long id, @RequestBody TransacaoRequest request) {
         try {
             transacaoService.atualizarTransacao(id, request);
-            return ResponseEntity.ok("Transação atualizada");
+            Map<String, String> resposta = new HashMap<>();
+
+            resposta.put("mensagem", request.getTipo() + " atualizada com sucesso");
+            return ResponseEntity.ok(resposta);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (IllegalStateException e) {
