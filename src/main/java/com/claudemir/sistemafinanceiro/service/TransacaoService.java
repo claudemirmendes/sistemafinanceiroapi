@@ -119,6 +119,9 @@ public class TransacaoService {
         if (filtro.getValorMax() != null) {
            spec = spec.and(TransacaoSpecification.valorMaiorQue(filtro.getValorMax()));
         }
+        if (filtro.getDescricao() != null) {
+            spec = spec.and(TransacaoSpecification.descricao(filtro.getDescricao()));
+        }
 
         // Filtros de DESPESA
         if (filtro.getPaga() != null) {

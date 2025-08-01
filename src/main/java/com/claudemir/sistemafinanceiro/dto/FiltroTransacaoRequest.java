@@ -7,12 +7,17 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
-public class FiltroTransacaoRequest {
+public class
+
+FiltroTransacaoRequest {
     private TipoTransacao tipo;
+    private String descricao;
 
     // Filtros comuns
     private BigDecimal valorMin;
     private BigDecimal valorMax;
+
+
 
     // Para DESPESA
     private Boolean paga;

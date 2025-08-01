@@ -12,8 +12,11 @@ public class TransacaoSpecification {
     }
 
     public static Specification<Transacao> doTipo(TipoTransacao tipo) {
-        // Correto: campo "tipo" é direto na entidade Transacao
         return (root, query, cb) -> cb.equal(root.get("tipo"), tipo);
+    }
+
+    public static Specification<Transacao> descricao(String descricao) {
+        return (root, query, cb) -> cb.like(cb.lower(root.get("descricao")), "%" + descricao.toLowerCase() + "%");
     }
 
 
@@ -26,18 +29,18 @@ public class TransacaoSpecification {
     }
 
     public static Specification<Transacao> dataVencimentoEntre(LocalDate inicio, LocalDate fim) {
-        return (root, query, cb) -> cb.between(root.get("data_vencimento"), inicio, fim);
+        return (root, query, cb) -> cb.between(root.get("dataVencimento"), inicio, fim);
     }
     public static Specification<Transacao> dataPagamentoEntre(LocalDate inicio, LocalDate fim) {
-        return (root, query, cb) -> cb.between(root.get("data_pagamento"), inicio, fim);
+        return (root, query, cb) -> cb.between(root.get("dataPagamento"), inicio, fim);
     }
 
     public static Specification<Transacao> dataPrevistaEntre(LocalDate inicio, LocalDate fim) {
-        return (root, query, cb) -> cb.between(root.get("data_prevista_recebimento"), inicio, fim);
+        return (root, query, cb) -> cb.between(root.get("dataPrevistaRecebimento"), inicio, fim);
     }
 
     public static Specification<Transacao> dataRecebimentoEntre(LocalDate inicio, LocalDate fim) {
-        return (root, query, cb) -> cb.between(root.get("data_prevista_recebimento"), inicio, fim);
+        return (root, query, cb) -> cb.between(root.get("dataRecebida"), inicio, fim);
     }
 
     public static Specification<Transacao> ePaga(Boolean paga){
