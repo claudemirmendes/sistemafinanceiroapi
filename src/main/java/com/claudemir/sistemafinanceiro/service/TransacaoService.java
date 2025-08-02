@@ -3,9 +3,8 @@ package com.claudemir.sistemafinanceiro.service;
 import com.claudemir.sistemafinanceiro.dto.FiltroTransacaoRequest;
 import com.claudemir.sistemafinanceiro.dto.TransacaoRequest;
 import com.claudemir.sistemafinanceiro.mapper.TransacaoMapper;
-import com.claudemir.sistemafinanceiro.model.TipoTransacao;
-import com.claudemir.sistemafinanceiro.model.Transacao;
-import com.claudemir.sistemafinanceiro.model.User;
+import com.claudemir.sistemafinanceiro.model.*;
+import com.claudemir.sistemafinanceiro.repository.BalanceRepository;
 import com.claudemir.sistemafinanceiro.repository.TransacaoRepository;
 import com.claudemir.sistemafinanceiro.repository.UserRepository;
 import com.claudemir.sistemafinanceiro.specification.TransacaoSpecification;
@@ -16,6 +15,7 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -34,16 +34,22 @@ public class TransacaoService {
     private EntityManager entityManager;
     private User usuario;
     private final TransacaoMapper mapper;
+    private final BalanceRepository balanceRepository;
+
+    @Autowired
+    private BalanceService balanceService;
 
 
     public TransacaoService(TransacaoRepository transacaoRepository,
                             UserRepository userRepository,
                             EntityManager entityManager,
-                            TransacaoMapper mapper) {
+                            TransacaoMapper mapper, BalanceRepository balanceRepository, BalanceService balanceService) {
         this.transacaoRepository = transacaoRepository;
         this.userRepository = userRepository;
         this.entityManager = entityManager;
         this.mapper = mapper;
+        this.balanceRepository = balanceRepository;
+        this.balanceService = balanceService;
     }
 
     public ResponseEntity<?> salvarComUsuario(TransacaoRequest request, Authentication authentication) {
@@ -84,7 +90,11 @@ public class TransacaoService {
         transacao.setPaga(true);
         transacao.setDataPagamento(LocalDate.now());
 
+
         transacaoRepository.save(transacao);
+        Balance balance = balanceService.obterOuCriarBalance(LocalDate.now());
+        balance.setTotalDespesas(balance.getTotalDespesas().add(transacao.getValor()));
+        balanceRepository.save(balance);
     }
 
     @Transactional
@@ -100,6 +110,9 @@ public class TransacaoService {
         transacao.setConfirmada(true);
         transacao.setDataRecebida(LocalDate.now());
 
+        Balance balance = balanceService.obterOuCriarBalance(LocalDate.now());
+        balance.setTotalReceitas(balance.getTotalReceitas().add(transacao.getValor()));
+        balanceRepository.save(balance);
         transacaoRepository.save(transacao);
     }
     public List<Transacao> filtrar(FiltroTransacaoRequest filtro, Authentication authentication) {;
