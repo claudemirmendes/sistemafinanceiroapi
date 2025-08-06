@@ -1,5 +1,6 @@
 package com.claudemir.sistemafinanceiro.controller;
 
+import com.claudemir.sistemafinanceiro.dto.ConfirmarTransacaoRequest;
 import com.claudemir.sistemafinanceiro.dto.FiltroTransacaoRequest;
 import com.claudemir.sistemafinanceiro.dto.LoginRequest;
 import com.claudemir.sistemafinanceiro.dto.TransacaoRequest;
@@ -50,9 +51,9 @@ TransacaoController {
     }
 
     @PutMapping("/{id}/confirmar-pagamento")
-    public ResponseEntity<?> confirmarPagamento(@PathVariable("id") Long id) {
+    public ResponseEntity<?> confirmarPagamento(@PathVariable("id") Long id, @RequestBody ConfirmarTransacaoRequest confirmarTransacaoRequest) {
         try {
-            transacaoService.confirmarPagamento(id);
+            transacaoService.confirmarPagamento(id, confirmarTransacaoRequest);
             Map<String, String> resposta = new HashMap<>();
             resposta.put("mensagem", "Pagamento confirmado com sucesso.");
             return ResponseEntity.ok(resposta);
@@ -66,10 +67,11 @@ TransacaoController {
     }
 
     @PutMapping("/{id}/confirmar-recebimento")
-    public ResponseEntity<?> confirmarRecebimento(@PathVariable("id") Long id){
+    public ResponseEntity<?> confirmarRecebimento(@PathVariable("id") Long id , @RequestBody ConfirmarTransacaoRequest confirmarTransacaoRequest){
         try {
-            transacaoService.confirmarRecebimento(id);
+            transacaoService.confirmarRecebimento(id, confirmarTransacaoRequest);
             Map<String, String> resposta = new HashMap<>();
+
 
             resposta.put("mensagem", "recebimento confirmado");
             return ResponseEntity.ok(resposta);

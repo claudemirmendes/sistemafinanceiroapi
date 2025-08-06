@@ -1,5 +1,6 @@
 package com.claudemir.sistemafinanceiro.service;
 
+import com.claudemir.sistemafinanceiro.dto.ConfirmarTransacaoRequest;
 import com.claudemir.sistemafinanceiro.dto.FiltroTransacaoRequest;
 import com.claudemir.sistemafinanceiro.dto.TransacaoRequest;
 import com.claudemir.sistemafinanceiro.mapper.TransacaoMapper;
@@ -20,7 +21,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import com.claudemir.sistemafinanceiro.model.User;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -75,7 +75,7 @@ public class TransacaoService {
     }
 
     @Transactional
-    public void confirmarPagamento(Long id) {
+    public void confirmarPagamento(Long id, ConfirmarTransacaoRequest confirmarTransacaoRequest) {
         Transacao transacao = transacaoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Transação não encontrada"));
 
@@ -88,17 +88,22 @@ public class TransacaoService {
         }
 
         transacao.setPaga(true);
-        transacao.setDataPagamento(LocalDate.now());
+        
+        if(confirmarTransacaoRequest.getDataPagamento() != null) {
+            transacao.setDataPagamento(confirmarTransacaoRequest.getDataPagamento());
+        }
+       
 
 
-        transacaoRepository.save(transacao);
-        Balance balance = balanceService.obterOuCriarBalance(LocalDate.now());
+       
+        Balance balance = balanceService.obterOuCriarBalance(confirmarTransacaoRequest.getDataPagamento());
         balance.setTotalDespesas(balance.getTotalDespesas().add(transacao.getValor()));
         balanceRepository.save(balance);
+        transacaoRepository.save(transacao);
     }
 
     @Transactional
-    public void confirmarRecebimento(Long id) {
+    public void confirmarRecebimento(Long id, ConfirmarTransacaoRequest confirmarTransacaoRequest) {
         Transacao transacao = transacaoRepository.findById(id)
                 .orElseThrow(()-> new EntityNotFoundException("Transacao Não encontrada"));
         if (transacao.getTipo() != TipoTransacao.RECEITA){
@@ -107,10 +112,14 @@ public class TransacaoService {
         if (Boolean.TRUE.equals(transacao.getConfirmada())){
             throw new IllegalStateException("Esta Receita já foi confirmada");
         }
-        transacao.setConfirmada(true);
-        transacao.setDataRecebida(LocalDate.now());
 
-        Balance balance = balanceService.obterOuCriarBalance(LocalDate.now());
+        if(confirmarTransacaoRequest.getDataRecebimento() != null) {
+            transacao.setDataRecebida(confirmarTransacaoRequest.getDataRecebimento());
+        }
+        transacao.setConfirmada(true);
+
+
+        Balance balance = balanceService.obterOuCriarBalance(confirmarTransacaoRequest.getDataRecebimento());
         balance.setTotalReceitas(balance.getTotalReceitas().add(transacao.getValor()));
         balanceRepository.save(balance);
         transacaoRepository.save(transacao);
