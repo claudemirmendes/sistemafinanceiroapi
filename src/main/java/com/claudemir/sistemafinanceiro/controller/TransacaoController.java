@@ -90,19 +90,18 @@ TransacaoController {
         return ResponseEntity.ok(resultado);
     }
 
-    @PutMapping("/{id}/atualizar")
-    public ResponseEntity<?> atualizar(@PathVariable("id") Long id, @RequestBody TransacaoRequest request) {
-        try {
-            transacaoService.atualizarTransacao(id, request);
-            Map<String, String> resposta = new HashMap<>();
-
-            resposta.put("mensagem", request.getTipo() + " atualizada com sucesso");
-            return ResponseEntity.ok(resposta);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+@PutMapping("/{id}/atualizar")
+public ResponseEntity<Transacao> atualizar(@PathVariable("id") Long id, @RequestBody TransacaoRequest request) {
+    try {
+        Transacao transacaoAtualizada = transacaoService.atualizarTransacao(id, request);
+        return ResponseEntity.ok(transacaoAtualizada);
+    } catch (EntityNotFoundException e) {
+        return ResponseEntity.notFound().build(); // melhor que retornar body null
+    } catch (IllegalStateException e) {
+        return ResponseEntity.badRequest().build(); // idem
     }
+}
+
+
 
 }

@@ -21,6 +21,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import com.claudemir.sistemafinanceiro.factory.TransacaoFactory;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -56,19 +57,10 @@ public class TransacaoService {
         String username = authentication.getName();
         User user = userRepository.findByUsername(username).orElseThrow();
 
-        Transacao transacao = new Transacao();
-        transacao.setTipo(request.getTipo());
-        transacao.setValor(request.getValor());
-        transacao.setDescricao(request.getDescricao());
-        transacao.setUsuario(user);
 
-        if (request.getTipo().isReceita()) {
-            transacao.setDataPrevistaRecebimento(request.getDataPrevistaRecebimento());
-            transacao.setConfirmada(request.getConfirmada());
-        } else {
-            transacao.setDataVencimento(request.getDataVencimento());
-            transacao.setPaga(request.getPaga());
-        }
+
+
+        Transacao  transacao = TransacaoFactory.criarTransacao(request, user);
 
         transacaoRepository.save(transacao);
         return ResponseEntity.ok(transacao);
@@ -175,7 +167,7 @@ public class TransacaoService {
     }
 
     @Transactional
-    public void atualizarTransacao(Long id, TransacaoRequest request) {
+    public Transacao  atualizarTransacao(Long id, TransacaoRequest request) {
         Transacao transacao = transacaoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Transação não encontrada"));
 
@@ -186,6 +178,7 @@ public class TransacaoService {
         mapper.updateTransacaoFromRequest(request, transacao);
 
         transacaoRepository.save(transacao);
+        return transacao;
     }
 
 }
