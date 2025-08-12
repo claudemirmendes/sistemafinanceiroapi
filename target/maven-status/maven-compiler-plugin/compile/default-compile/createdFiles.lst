@@ -7,6 +7,7 @@ com/claudemir/sistemafinanceiro/model/Balance.class
 com/claudemir/sistemafinanceiro/dto/RegisterRequest.class
 com/claudemir/sistemafinanceiro/repository/BalanceRepository.class
 com/claudemir/sistemafinanceiro/service/BalanceService.class
+com/claudemir/sistemafinanceiro/factory/TransacaoFactory.class
 com/claudemir/sistemafinanceiro/dto/TransacaoRequest.class
 com/claudemir/sistemafinanceiro/repository/TransacaoRepository.class
 com/claudemir/sistemafinanceiro/dto/CustomErrorResponse.class
