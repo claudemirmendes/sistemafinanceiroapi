@@ -66,6 +66,23 @@ TransacaoController {
         }
     }
 
+
+    @DeleteMapping("/{id}/delete_transacao")
+     public ResponseEntity<?> deletarPagamento(@PathVariable("id") Long id) {
+        try {
+            transacaoService.deletarPagamento(id);
+            Map<String, String> resposta = new HashMap<>();
+            resposta.put("mensagem", "Transacao deletada com sucesso.");
+            return ResponseEntity.ok(resposta);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("erro", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("erro", e.getMessage()));
+        }
+    }
+
     @PutMapping("/{id}/confirmar-recebimento")
     public ResponseEntity<?> confirmarRecebimento(@PathVariable("id") Long id , @RequestBody ConfirmarTransacaoRequest confirmarTransacaoRequest){
         try {

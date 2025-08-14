@@ -18,6 +18,9 @@ public class Transacao {
     @Enumerated(EnumType.STRING)
     private TipoTransacao tipo;
 
+    @Enumerated(EnumType.STRING)
+    private StatusTransacao status;
+
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal valor;
 

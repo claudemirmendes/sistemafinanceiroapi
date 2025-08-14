@@ -23,6 +23,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import com.claudemir.sistemafinanceiro.factory.TransacaoFactory;
 
+
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -179,6 +181,27 @@ public class TransacaoService {
 
         transacaoRepository.save(transacao);
         return transacao;
+    }
+
+    public void deletarPagamento(Long id) {
+        Transacao transacao = transacaoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Transação não encontrada"));
+        
+        // Atualiza o balance se necessário
+        if (transacao.getTipo() == TipoTransacao.DESPESA && transacao.getDataPagamento() != null) {
+            Balance balance = balanceService.obterOuCriarBalance(transacao.getDataPagamento());
+            balance.setTotalDespesas(balance.getTotalDespesas().subtract(transacao.getValor()));
+            balanceRepository.save(balance);
+        }
+        if (transacao.getTipo() == TipoTransacao.RECEITA && transacao.getDataRecebida() != null) {
+            Balance balance = balanceService.obterOuCriarBalance(transacao.getDataRecebida());
+           balance.setTotalReceitas(balance.getTotalReceitas().subtract(transacao.getValor()));
+
+            balanceRepository.save(balance);
+        }
+       
+    transacao.setStatus(StatusTransacao.CANCELADA); // apenas altera o campo
+    transacaoRepository.save(transacao); // salva normalmente
     }
 
 }
