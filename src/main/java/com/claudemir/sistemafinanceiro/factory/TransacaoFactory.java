@@ -2,6 +2,7 @@ package com.claudemir.sistemafinanceiro.factory;
 import com.claudemir.sistemafinanceiro.model.Transacao;
 import com.claudemir.sistemafinanceiro.dto.TransacaoRequest;
 import com.claudemir.sistemafinanceiro.model.User;
+import com.claudemir.sistemafinanceiro.model.StatusTransacao;
 
 
 public class TransacaoFactory {
@@ -11,6 +12,7 @@ public class TransacaoFactory {
         transacao.setTipo(request.getTipo());
         transacao.setValor(request.getValor());
         transacao.setDescricao(request.getDescricao());
+        transacao.setStatus( StatusTransacao.ATIVA);
         transacao.setUsuario(user);
              if (request.getTipo().isReceita()) {
             transacao.setDataPrevistaRecebimento(request.getDataPrevistaRecebimento());

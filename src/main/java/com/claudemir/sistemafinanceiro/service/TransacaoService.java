@@ -80,7 +80,9 @@ public class TransacaoService {
         if (Boolean.TRUE.equals(transacao.getPaga())) {
             throw new IllegalStateException("Essa despesa já está marcada como paga.");
         }
-
+        if (StatusTransacao.CANCELADA.equals(transacao.getStatus())) {
+            throw new IllegalStateException("Essa transação está cancelada e não pode ser paga.");
+        }
         transacao.setPaga(true);
         
         if(confirmarTransacaoRequest.getDataPagamento() != null) {
@@ -106,7 +108,9 @@ public class TransacaoService {
         if (Boolean.TRUE.equals(transacao.getConfirmada())){
             throw new IllegalStateException("Esta Receita já foi confirmada");
         }
-
+        if (StatusTransacao.CANCELADA.equals(transacao.getStatus())) {
+            throw new IllegalStateException("Essa transação está cancelada e não pode ser recebida.");
+        }
         if(confirmarTransacaoRequest.getDataRecebimento() != null) {
             transacao.setDataRecebida(confirmarTransacaoRequest.getDataRecebimento());
         }
@@ -124,6 +128,7 @@ public class TransacaoService {
                 .orElseThrow(()-> new EntityNotFoundException("Usuário Não encontrado"));
         Specification<Transacao> spec = Specification.where(TransacaoSpecification.doUsuario(user.getId()));
 
+        spec = spec.and(TransacaoSpecification.naoCanceladas(StatusTransacao.CANCELADA));
         if (filtro.getTipo() != null) {
             spec = spec.and(TransacaoSpecification.doTipo(filtro.getTipo()));
         }
@@ -200,8 +205,8 @@ public class TransacaoService {
             balanceRepository.save(balance);
         }
        
-    transacao.setStatus(StatusTransacao.CANCELADA); // apenas altera o campo
-    transacaoRepository.save(transacao); // salva normalmente
+    transacao.setStatus(StatusTransacao.CANCELADA);
+    transacaoRepository.save(transacao);
     }
 
 }

@@ -1,10 +1,13 @@
 package com.claudemir.sistemafinanceiro.specification;
 import com.claudemir.sistemafinanceiro.model.TipoTransacao;
 import com.claudemir.sistemafinanceiro.model.Transacao;
+
 import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import com.claudemir.sistemafinanceiro.model.StatusTransacao;
+
 public class TransacaoSpecification {
     public static Specification<Transacao> doUsuario(Long id) {
         // Corrigido: acessa o campo "usuario" (objeto) e seu atributo "id"
@@ -13,6 +16,14 @@ public class TransacaoSpecification {
 
     public static Specification<Transacao> doTipo(TipoTransacao tipo) {
         return (root, query, cb) -> cb.equal(root.get("tipo"), tipo);
+    }
+
+
+    public static Specification<Transacao> naoCanceladas(StatusTransacao status) {
+            return (root, query, cb) -> cb.or(
+        cb.isNull(root.get("status")),
+        cb.notEqual(root.get("status"), status)
+    );
     }
 
     public static Specification<Transacao> descricao(String descricao) {
