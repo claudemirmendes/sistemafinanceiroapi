@@ -63,15 +63,18 @@ public class TransacaoService {
 
 
         Transacao  transacao = TransacaoFactory.criarTransacao(request, user);
-
         transacaoRepository.save(transacao);
         return ResponseEntity.ok(transacao);
     }
 
     @Transactional
-    public void confirmarPagamento(Long id, ConfirmarTransacaoRequest confirmarTransacaoRequest) {
+    public void confirmarPagamento(Long id, ConfirmarTransacaoRequest confirmarTransacaoRequest, Authentication authentication) {
         Transacao transacao = transacaoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Transação não encontrada"));
+
+        String username = authentication.getName();
+                User user = userRepository.findByUsername(authentication.getName())
+                .orElseThrow(()-> new EntityNotFoundException("Usuário Não encontrado"));
 
         if (transacao.getTipo() != TipoTransacao.DESPESA) {
             throw new IllegalStateException("Apenas despesas podem ser confirmadas como pagas.");
@@ -84,7 +87,9 @@ public class TransacaoService {
             throw new IllegalStateException("Essa transação está cancelada e não pode ser paga.");
         }
         transacao.setPaga(true);
-        
+        if (user.getId() != transacao.getUsuario().getId()) {
+            throw new IllegalStateException("Usuário não autorizado a confirmar pagamento desta transação.");
+        }
         if(confirmarTransacaoRequest.getDataPagamento() != null) {
             transacao.setDataPagamento(confirmarTransacaoRequest.getDataPagamento());
         }
@@ -99,9 +104,16 @@ public class TransacaoService {
     }
 
     @Transactional
-    public void confirmarRecebimento(Long id, ConfirmarTransacaoRequest confirmarTransacaoRequest) {
+    public void confirmarRecebimento(Long id, ConfirmarTransacaoRequest confirmarTransacaoRequest, Authentication authentication) {
         Transacao transacao = transacaoRepository.findById(id)
                 .orElseThrow(()-> new EntityNotFoundException("Transacao Não encontrada"));
+
+            String username = authentication.getName();
+                User user = userRepository.findByUsername(authentication.getName())
+                .orElseThrow(()-> new EntityNotFoundException("Usuário Não encontrado"));
+        if (user.getId() != transacao.getUsuario().getId()) {
+            throw new IllegalStateException("Usuário não autorizado a confirmar recebimento desta transação.");
+        }
         if (transacao.getTipo() != TipoTransacao.RECEITA){
             throw new IllegalStateException("Apenas Receitas podem confirmar Pagamento");
         }
@@ -174,7 +186,7 @@ public class TransacaoService {
     }
 
     @Transactional
-    public Transacao  atualizarTransacao(Long id, TransacaoRequest request) {
+    public Transacao  atualizarTransacao(Long id, TransacaoRequest request, Authentication authentication) {
         Transacao transacao = transacaoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Transação não encontrada"));
 
@@ -182,6 +194,13 @@ public class TransacaoService {
         if (request.getTipo() != null){
             throw new IllegalStateException("Não é possivel alterar o tipo da transação");
         };
+
+            String username = authentication.getName();
+                User user = userRepository.findByUsername(authentication.getName())
+                .orElseThrow(()-> new EntityNotFoundException("Usuário Não encontrado"));
+        if (user.getId() != transacao.getUsuario().getId()) {
+            throw new IllegalStateException("Usuário não autorizado a alterar esta transação.");
+        }
         mapper.updateTransacaoFromRequest(request, transacao);
 
         transacaoRepository.save(transacao);

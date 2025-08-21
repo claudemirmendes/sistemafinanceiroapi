@@ -51,9 +51,9 @@ TransacaoController {
     }
 
     @PutMapping("/{id}/confirmar-pagamento")
-    public ResponseEntity<?> confirmarPagamento(@PathVariable("id") Long id, @RequestBody ConfirmarTransacaoRequest confirmarTransacaoRequest) {
+    public ResponseEntity<?> confirmarPagamento(@PathVariable("id") Long id, @RequestBody ConfirmarTransacaoRequest confirmarTransacaoRequest, Authentication authentication) {
         try {
-            transacaoService.confirmarPagamento(id, confirmarTransacaoRequest);
+            transacaoService.confirmarPagamento(id, confirmarTransacaoRequest, authentication);
             Map<String, String> resposta = new HashMap<>();
             resposta.put("mensagem", "Pagamento confirmado com sucesso.");
             return ResponseEntity.ok(resposta);
@@ -84,9 +84,9 @@ TransacaoController {
     }
 
     @PutMapping("/{id}/confirmar-recebimento")
-    public ResponseEntity<?> confirmarRecebimento(@PathVariable("id") Long id , @RequestBody ConfirmarTransacaoRequest confirmarTransacaoRequest){
+    public ResponseEntity<?> confirmarRecebimento(@PathVariable("id") Long id , @RequestBody ConfirmarTransacaoRequest confirmarTransacaoRequest,Authentication authentication) {
         try {
-            transacaoService.confirmarRecebimento(id, confirmarTransacaoRequest);
+            transacaoService.confirmarRecebimento(id, confirmarTransacaoRequest,authentication);
             Map<String, String> resposta = new HashMap<>();
 
 
@@ -108,14 +108,21 @@ TransacaoController {
     }
 
 @PutMapping("/{id}/atualizar")
-public ResponseEntity<Transacao> atualizar(@PathVariable("id") Long id, @RequestBody TransacaoRequest request) {
+public ResponseEntity<?> atualizar(@PathVariable("id") Long id,
+                                   @RequestBody TransacaoRequest request,
+                                   Authentication authentication) {
     try {
-        Transacao transacaoAtualizada = transacaoService.atualizarTransacao(id, request);
-        return ResponseEntity.ok(transacaoAtualizada);
+        Transacao transacaoAtualizada = transacaoService.atualizarTransacao(id, request, authentication);
+        return ResponseEntity.ok(Map.of(
+            "mensagem", "Transação atualizada com sucesso",
+            "transacao", transacaoAtualizada
+        ));
     } catch (EntityNotFoundException e) {
-        return ResponseEntity.notFound().build(); // melhor que retornar body null
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                             .body(Map.of("erro", "Transação não encontrada"));
     } catch (IllegalStateException e) {
-        return ResponseEntity.badRequest().build(); // idem
+        return ResponseEntity.badRequest()
+                             .body(Map.of("erro", e.getMessage()));
     }
 }
 
