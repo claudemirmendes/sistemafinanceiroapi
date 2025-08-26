@@ -207,9 +207,15 @@ public class TransacaoService {
         return transacao;
     }
 
-    public void deletarPagamento(Long id) {
+    public void deletarPagamento(Long id, Authentication authentication) {
         Transacao transacao = transacaoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Transação não encontrada"));
+            String username = authentication.getName();
+                User user = userRepository.findByUsername(authentication.getName())
+                .orElseThrow(()-> new EntityNotFoundException("Usuário Não encontrado"));
+        if (user.getId() != transacao.getUsuario().getId()) {
+            throw new IllegalStateException("Usuário não autorizado a deletar esta transação.");
+        }
         
         // Atualiza o balance se necessário
         if (transacao.getTipo() == TipoTransacao.DESPESA && transacao.getDataPagamento() != null) {

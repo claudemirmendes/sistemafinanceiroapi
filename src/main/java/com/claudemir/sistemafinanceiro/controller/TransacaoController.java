@@ -68,9 +68,9 @@ TransacaoController {
 
 
     @DeleteMapping("/{id}/delete_transacao")
-     public ResponseEntity<?> deletarPagamento(@PathVariable("id") Long id) {
+     public ResponseEntity<?> deletarPagamento(@PathVariable("id") Long id, Authentication authentication) {
         try {
-            transacaoService.deletarPagamento(id);
+            transacaoService.deletarPagamento(id, authentication);
             Map<String, String> resposta = new HashMap<>();
             resposta.put("mensagem", "Transacao deletada com sucesso.");
             return ResponseEntity.ok(resposta);
